@@ -25,15 +25,28 @@ create table if not exists public.referral_rewards (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.orders (
+  order_id text primary key,
+  buyer_id uuid references public.profiles(id) on delete set null,
+  project_name text not null,
+  order_amount numeric not null,
+  referral_attribution_id bigint references public.referral_attributions(id) on delete set null,
+  status text not null default 'created' check (status in ('created','paid','failed','refunded')),
+  created_at timestamptz not null default now(),
+  paid_at timestamptz
+);
+
 alter table public.profiles enable row level security;
 alter table public.referral_attributions enable row level security;
 alter table public.referral_rewards enable row level security;
+alter table public.orders enable row level security;
 
 create policy "users read own profile" on public.profiles for select using (auth.uid() = id);
 create policy "users create own profile" on public.profiles for insert with check (auth.uid() = id);
 create policy "users update own profile" on public.profiles for update using (auth.uid() = id);
 create policy "users read own attributions" on public.referral_attributions for select using (auth.uid() = referrer_id or auth.uid() = referred_user_id);
 create policy "users read own rewards" on public.referral_rewards for select using (exists (select 1 from public.referral_attributions a where a.id = attribution_id and a.referrer_id = auth.uid()));
+create policy "users read own orders" on public.orders for select using (auth.uid() = buyer_id);
 
 create or replace function public.new_referral_code() returns text language plpgsql as $$
 declare candidate text;

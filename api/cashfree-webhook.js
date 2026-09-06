@@ -21,6 +21,18 @@ export default async function handler(req, res) {
   const paymentStatus = event.data?.payment?.payment_status || event.type;
   console.log(JSON.stringify({ received_at: new Date().toISOString(), order_id: orderId, payment_status: paymentStatus }));
 
-  // TODO: persist the verified event in your orders table and fulfil only PAID orders.
+  if (orderId && paymentStatus === 'SUCCESS' && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const { createClient } = await import('@supabase/supabase-js');
+    const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
+    const { data: order } = await admin.from('orders').select('order_id,order_amount,referral_attribution_id,status').eq('order_id', orderId).maybeSingle();
+    if (order) {
+      await admin.from('orders').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('order_id', orderId);
+      if (order.referral_attribution_id && order.status !== 'paid') {
+        const amount = Number(order.order_amount);
+        const reward = amount >= 10001 ? 1000 : amount >= 6001 ? 750 : amount >= 3000 ? 500 : 0;
+        if (reward) await admin.from('referral_rewards').upsert({ attribution_id: order.referral_attribution_id, order_id: orderId, order_amount: amount, reward_amount: reward, status: 'pending' }, { onConflict: 'order_id' });
+      }
+    }
+  }
   return res.status(200).json({ received: true });
 }

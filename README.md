@@ -61,7 +61,7 @@ Cashfree return URLs only indicate that the customer returned from checkout. Ful
 
 ### Secure referrals and accounts
 
-The referral hub uses Supabase Auth and server-side attribution. In the Supabase dashboard SQL Editor, run [`supabase/schema.sql`](supabase/schema.sql) once. Then enable email/password sign-up in Authentication → Providers → Email. The public anon key belongs in `VITE_SUPABASE_ANON_KEY`; the service-role key belongs only in `SUPABASE_SERVICE_ROLE_KEY`. The app creates a unique personal link after sign-in, attributes a referred account only once, rejects self-referrals, and leaves reward approval to verified payment/webhook processing.
+The referral hub uses Supabase Auth and server-side attribution. In the Supabase dashboard SQL Editor, run [`supabase/schema.sql`](supabase/schema.sql) once, then run [`supabase/migrations/001_orders_and_rewards.sql`](supabase/migrations/001_orders_and_rewards.sql). Enable email/password sign-up in Authentication → Providers → Email. The public anon key belongs in `VITE_SUPABASE_ANON_KEY`; the service-role key belongs only in `SUPABASE_SERVICE_ROLE_KEY`. The app creates a unique personal link after sign-in, attributes a referred account only once, rejects self-referrals, and creates pending rewards only after verified payment/webhook processing.
 
 ## Demo admin
 
