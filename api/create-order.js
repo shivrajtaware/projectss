@@ -7,7 +7,7 @@ function json(res, status, body) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { error: 'Method not allowed' });
-  const { projectId, projectName, amount, customer = {} } = req.body || {};
+  const { projectId, projectName, amount, customer = {}, referralCode } = req.body || {};
   const numericAmount = Number(amount);
   if (!projectId || !projectName || !Number.isFinite(numericAmount) || numericAmount < 1 || !customer.name || !customer.email || !customer.phone) {
     return json(res, 400, { error: 'Project, customer details and a valid amount are required.' });
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
           return_url: `${origin}/payment-success?order_id={order_id}`,
           notify_url: process.env.CASHFREE_WEBHOOK_URL || undefined,
         },
-        order_note: String(projectName).slice(0, 200),
+        order_note: `${String(projectName)}${referralCode ? ` | referral:${String(referralCode)}` : ''}`.slice(0, 200),
       }),
     });
     const data = await response.json();
