@@ -42,3 +42,4 @@ body{background:#f8f9fb;color:var(--ink);font-size:14px;-webkit-font-smoothing:a
 /* Public storefront: keep administration private. */
 .storeNavActions>button:last-child{display:none!important}
 .storeNavActions>button:last-child{display:inline-flex!important}
+.modernBuy .buyTrust{font-size:0}.modernBuy .buyTrust:after{content:'Request securely';font-size:11px}.modernBuy .buyNote{font-size:0}.modernBuy .buyNote:after{content:'We will contact you directly after your request.';font-size:9px}
